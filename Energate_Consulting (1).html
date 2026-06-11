@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Energate">
+<meta name="theme-color" content="#0D1B3E">
+<title>Energate Consulting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: #0A0E1A;
+  color: #F0F4FF;
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+.app {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ─── */
+.header {
+  background: linear-gradient(160deg, #0D1B3E 0%, #1A2B5E 100%);
+  padding: env(safe-area-inset-top, 12px) 20px 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid rgba(99,130,255,0.2);
+}
+.header-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, #4F72FF, #00D4AA);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: white;
+  flex-shrink: 0;
+}
+.logo-name { font-size: 19px; font-weight: 700; background: linear-gradient(90deg, #7B9BFF, #00D4AA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.logo-sub { font-size: 10px; color: rgba(160,180,255,0.6); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 1px; }
+
+/* Steps */
+.steps { display: flex; align-items: center; }
+.step-item { display: flex; align-items: center; flex: 1; }
+.step-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0; transition: all 0.3s;
+}
+.step-circle.done { background: #00D4AA; color: #001A14; }
+.step-circle.active { background: #4F72FF; color: white; box-shadow: 0 0 14px rgba(79,114,255,0.55); }
+.step-circle.pending { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.12); }
+.step-line { flex: 1; height: 1px; margin: 0 3px; transition: background 0.3s; }
+.step-line.done { background: #00D4AA; }
+.step-line.pending { background: rgba(255,255,255,0.1); }
+
+/* ─── Content ─── */
+.content { flex: 1; padding: 22px 20px 8px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.section-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.section-sub { font-size: 13px; color: rgba(160,180,255,0.6); margin-bottom: 22px; }
+
+/* ─── Form Fields ─── */
+.field { margin-bottom: 15px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: rgba(160,180,255,0.75); text-transform: uppercase;
+  letter-spacing: 0.9px; margin-bottom: 6px;
+}
+.field input, .field select {
+  width: 100%; padding: 13px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(99,130,255,0.22);
+  border-radius: 11px; color: #F0F4FF;
+  font-size: 15px; -webkit-appearance: none;
+  outline: none; transition: border 0.2s, background 0.2s;
+}
+.field input:focus, .field select:focus {
+  border-color: #4F72FF; background: rgba(79,114,255,0.1);
+}
+.field input::placeholder { color: rgba(160,180,255,0.3); }
+.field select option { background: #1A2B5E; color: #F0F4FF; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ─── Toggle ─── */
+.toggle-group {
+  display: flex;
+  background: rgba(255,255,255,0.05);
+  border-radius: 11px; border: 1px solid rgba(99,130,255,0.2);
+  overflow: hidden; margin-bottom: 15px;
+}
+.toggle-btn {
+  flex: 1; padding: 11px; text-align: center;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: all 0.2s; color: rgba(160,180,255,0.55);
+  border: none; background: transparent; color: rgba(160,180,255,0.55);
+}
+.toggle-btn.active { background: linear-gradient(135deg, #4F72FF, #3A58D4); color: white; }
+
+/* ─── Buttons ─── */
+.btn-primary {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, #4F72FF, #00D4AA);
+  border: none; border-radius: 13px;
+  color: white; font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s; -webkit-appearance: none;
+}
+.btn-primary:active { opacity: 0.82; }
+
+.btn-secondary {
+  width: 100%; padding: 13px;
+  background: rgba(79,114,255,0.1);
+  border: 1px solid rgba(79,114,255,0.28);
+  border-radius: 12px; color: #6B8FFF;
+  font-size: 15px; font-weight: 500; cursor: pointer;
+  margin-bottom: 12px; transition: background 0.2s; -webkit-appearance: none;
+}
+.btn-secondary:active { background: rgba(79,114,255,0.2); }
+
+/* ─── Lieferstelle Card ─── */
+.ls-card {
+  background: rgba(79,114,255,0.07);
+  border: 1px solid rgba(79,114,255,0.22);
+  border-radius: 13px; padding: 14px; margin-bottom: 12px;
+}
+.ls-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
+.ls-card-title { font-size: 13px; font-weight: 600; color: #7B9BFF; }
+.ls-badge {
+  display: inline-block; padding: 3px 9px;
+  border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.ls-badge.strom { background: rgba(255,200,50,0.12); color: #FFD43B; border: 1px solid rgba(255,212,59,0.25); }
+.ls-badge.gas { background: rgba(0,212,170,0.12); color: #00D4AA; border: 1px solid rgba(0,212,170,0.25); }
+.ls-delete {
+  background: rgba(255,80,80,0.12); border: none;
+  border-radius: 7px; color: #FF6B6B;
+  width: 30px; height: 30px; font-size: 20px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  -webkit-appearance: none;
+}
+.ls-detail { font-size: 12px; color: rgba(160,180,255,0.55); margin-top: 5px; line-height: 1.5; }
+.ls-detail strong { color: rgba(240,244,255,0.85); font-weight: 500; }
+
+/* ─── Form Card (neues LS) ─── */
+.ls-form-card {
+  background: rgba(20,32,80,0.9);
+  border: 1px solid rgba(79,114,255,0.28);
+  border-radius: 14px; padding: 16px; margin-bottom: 16px;
+}
+.ls-form-title { font-size: 14px; font-weight: 600; color: #7B9BFF; margin-bottom: 14px; }
+
+/* ─── Modal ─── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72); z-index: 1000;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.modal {
+  background: #0D1B3E;
+  border-radius: 22px 22px 0 0;
+  padding: 24px 20px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  width: 100%; max-width: 430px;
+  max-height: 78vh; overflow-y: auto;
+  border: 1px solid rgba(79,114,255,0.28); border-bottom: none;
+}
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+.modal-body { font-size: 13.5px; color: rgba(160,180,255,0.8); line-height: 1.75; white-space: pre-wrap; }
+.modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+.modal-btn {
+  flex: 1; padding: 13px; border-radius: 11px;
+  font-size: 14px; font-weight: 600; cursor: pointer; border: none; -webkit-appearance: none;
+}
+.modal-btn.confirm { background: linear-gradient(135deg,#4F72FF,#00D4AA); color: white; }
+.modal-btn.cancel { background: rgba(255,255,255,0.07); color: rgba(160,180,255,0.75); }
+
+/* ─── Signature ─── */
+.sig-wrap {
+  background: white; border-radius: 13px;
+  border: 2px dashed rgba(79,114,255,0.4);
+  overflow: hidden; position: relative; touch-action: none;
+}
+canvas#sigCanvas { display: block; width: 100% !important; }
+.sig-hint {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  color: rgba(100,130,255,0.3); font-size: 14px;
+  pointer-events: none; text-align: center; line-height: 1.5;
+}
+.sig-actions { display: flex; gap: 12px; margin-top: 11px; }
+.sig-clear {
+  flex: 1; padding: 11px;
+  background: rgba(255,80,80,0.1);
+  border: 1px solid rgba(255,80,80,0.28);
+  border-radius: 11px; color: #FF6B6B;
+  font-size: 14px; cursor: pointer; -webkit-appearance: none;
+}
+
+/* ─── VM Link ─── */
+.vm-link { color: #7B9BFF; text-decoration: underline; cursor: pointer; font-weight: 500; }
+
+/* ─── Info Box ─── */
+.info-box {
+  background: rgba(79,114,255,0.07);
+  border: 1px solid rgba(79,114,255,0.2);
+  border-radius: 12px; padding: 13px 15px;
+  margin-bottom: 18px;
+  font-size: 13.5px; color: rgba(160,180,255,0.8); line-height: 1.65;
+}
+
+/* ─── Success ─── */
+.success-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 60vh; text-align: center; padding: 40px 24px;
+}
+.success-icon { font-size: 80px; margin-bottom: 22px; animation: pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+@keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+/* ─── Divider ─── */
+.divider { height: 1px; background: rgba(99,130,255,0.13); margin: 18px 0; }
+
+/* ─── Nav Bottom ─── */
+.nav-bottom {
+  display: flex; gap: 12px;
+  padding: 14px 20px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  background: rgba(10,14,26,0.97);
+  border-top: 1px solid rgba(99,130,255,0.14);
+  position: sticky; bottom: 0;
+}
+.btn-back {
+  padding: 13px 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; color: rgba(160,180,255,0.65);
+  font-size: 15px; cursor: pointer; -webkit-appearance: none;
+  white-space: nowrap;
+}
+.btn-next {
+  flex: 1; padding: 13px;
+  background: linear-gradient(135deg,#4F72FF,#00D4AA);
+  border: none; border-radius: 12px;
+  color: white; font-size: 15px; font-weight: 600;
+  cursor: pointer; -webkit-appearance: none;
+}
+
+.sig-confirmed {
+  margin-top: 11px; padding: 11px 14px;
+  background: rgba(0,212,170,0.09);
+  border: 1px solid rgba(0,212,170,0.28);
+  border-radius: 11px; font-size: 13px; color: #00D4AA;
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+/* ────────── STATE ────────── */
+const state = {
+  step: 0,
+  kd: { firma:'', gf:'', strasse:'', plz:'', ort:'', email:'', tel:'', stnr:'' },
+  ls: [],
+  lsForm: { versorger:'', kdnr:'', laufzeit:'', kuendigung:'', zaehlernr:'', malo:'', verbrauch:'', typ:'Strom' },
+  showLsForm: false,
+  bd: { iban:'', bic:'', stnr:'', hrb:'', ustid:'' },
+  uz: { vorname:'', nachname:'' },
+  sigDataUrl: null,
+  sigTs: null,
+  missingModal: false,
+  missingFields: [],
+  vmModal: false,
+};
+
+const VM_TEXT = `Auftragserlaubnis zur Vertragsoptimierung
+
+Hiermit erteilt der Auftraggeber der Energate Consulting die Vollmacht,
+
+• Jegliche Auskünfte und Informationen zur Belieferung/Anschlusssituation von geschlossenen Verträgen bei der Energiebeschaffung und insbesondere die vergangene Abfrage von Lastprofilen im Zusammenhang mit der Energiebelieferung von Netzbetreibern und Lieferanten des Auftraggebers.
+
+• die Einholung und Ausschreibung von Angeboten zur Energiebelieferung, insbesondere durch Nutzung elektronischer Medien inklusive der Weitergabe zu diesem Zweck erforderlichen Daten des Auftraggebers.
+
+• Im Umfang dieser Vollmacht entbindet die Vollmachtgeber/in die mit ihr in vertraglichen Verhältnissen stehenden Netz- und Messstellenbetreiber sowie Energielieferanten von etwaig bestehenden Verschwiegenheitspflichten gegenüber der Energate Consulting und der von ihr eingesetzte Dritter, sowie beauftragter Mitarbeiter.
+
+• das Recht zur Kündigung, zum Neuabschluss von neuen Verträgen mit im Namen oder auf Rechnung und zum Einzug der für die Energieversorgung des Vollmachtgebers jeweils fällige Entgelte von einem Konto des Auftraggebers zur ermächtigen.
+
+Diese Vollmacht kann von Seiten des Auftraggebers jederzeit widerrufen werden.`;
+
+/* ────────── CANVAS ────────── */
+let sigCanvas, sigCtx, sigDrawing = false, sigHasData = false;
+
+function v(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+
+/* ────────── RENDER ────────── */
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  if (state.step === 5) { renderSuccess(app); if (state.vmModal) renderVMModal(app); return; }
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'header';
+  const stepLabels = ['Kunde','Lieferstellen','Bank','Unterschrift'];
+  hdr.innerHTML = `
+    <div class="header-logo">
+      <div class="logo-icon">E</div>
+      <div>
+        <div class="logo-name">Energate Consulting</div>
+        <div class="logo-sub">Energievermittlung</div>
+      </div>
+    </div>
+    <div class="steps">
+      ${[0,1,2,3].map(i => `
+        <div class="step-item">
+          <div class="step-circle ${state.step > i ? 'done' : state.step === i ? 'active' : 'pending'}">
+            ${state.step > i ? '✓' : i+1}
+          </div>
+          ${i < 3 ? `<div class="step-line ${state.step > i ? 'done' : 'pending'}"></div>` : ''}
+        </div>`).join('')}
+    </div>`;
+  app.appendChild(hdr);
+
+  // Content
+  const cont = document.createElement('div');
+  cont.className = 'content';
+  if (state.step === 0) renderKunde(cont);
+  else if (state.step === 1) renderLs(cont);
+  else if (state.step === 2) renderBank(cont);
+  else if (state.step === 3) renderSign(cont);
+  app.appendChild(cont);
+
+  // Nav
+  const nav = document.createElement('div');
+  nav.className = 'nav-bottom';
+  if (state.step > 0) {
+    const b = document.createElement('button');
+    b.className = 'btn-back'; b.textContent = '← Zurück';
+    b.onclick = () => { saveStep(); state.step--; render(); };
+    nav.appendChild(b);
+  }
+  if (state.step < 3) {
+    const n = document.createElement('button');
+    n.className = 'btn-next'; n.textContent = 'Weiter →';
+    n.onclick = handleNext; nav.appendChild(n);
+  }
+  app.appendChild(nav);
+
+  // Modals
+  if (state.missingModal) renderMissingModal(app);
+  if (state.vmModal) renderVMModal(app);
+
+  if (state.step === 3) setTimeout(initSig, 60);
+}
+
+/* ─── Step 1: Kundendaten ─── */
+function renderKunde(c) {
+  c.innerHTML = `
+    <div class="section-title">Kundendaten</div>
+    <div class="section-sub">Schritt 1 von 4 — Unternehmensangaben</div>
+    <div class="field"><label>Firmenname</label><input type="text" id="f_firma" value="${esc(state.kd.firma)}" placeholder="Musterfirma GmbH" autocomplete="organization"></div>
+    <div class="field"><label>Geschäftsführer</label><input type="text" id="f_gf" value="${esc(state.kd.gf)}" placeholder="Max Mustermann" autocomplete="name"></div>
+    <div class="field"><label>Straße &amp; Hausnummer</label><input type="text" id="f_str" value="${esc(state.kd.strasse)}" placeholder="Musterstraße 1" autocomplete="street-address"></div>
+    <div class="row2">
+      <div class="field"><label>PLZ</label><input type="text" inputmode="numeric" id="f_plz" value="${esc(state.kd.plz)}" placeholder="10115" autocomplete="postal-code"></div>
+      <div class="field"><label>Ort</label><input type="text" id="f_ort" value="${esc(state.kd.ort)}" placeholder="Berlin" autocomplete="address-level2"></div>
+    </div>
+    <div class="field"><label>E-Mail</label><input type="email" id="f_email" value="${esc(state.kd.email)}" placeholder="info@firma.de" autocomplete="email" inputmode="email"></div>
+    <div class="field"><label>Telefonnummer</label><input type="tel" id="f_tel" value="${esc(state.kd.tel)}" placeholder="+49 30 123456" autocomplete="tel"></div>
+    <div class="field"><label>Steuernummer</label><input type="text" id="f_stnr" value="${esc(state.kd.stnr)}" placeholder="12/345/67890"></div>
+    <div style="height:8px"></div>`;
+}
+
+/* ─── Step 2: Lieferstellen ─── */
+function renderLs(c) {
+  let html = `<div class="section-title">Lieferstellen</div>
+    <div class="section-sub">Schritt 2 von 4 — Energieanschlüsse erfassen</div>`;
+
+  state.ls.forEach((l, i) => {
+    html += `<div class="ls-card">
+      <div class="ls-card-header">
+        <span class="ls-card-title">Lieferstelle ${i+1}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="ls-badge ${l.typ==='Strom'?'strom':'gas'}">${l.typ==='Strom'?'⚡':'🔥'} ${l.typ}</span>
+          <button class="ls-delete" onclick="deleteLs(${i})">×</button>
+        </div>
+      </div>
+      <div class="ls-detail"><strong>${l.versorger||'—'}</strong> &nbsp;·&nbsp; Kd.-Nr.: ${l.kdnr||'—'}</div>
+      <div class="ls-detail">Zähler: ${l.zaehlernr||'—'} &nbsp;·&nbsp; MaLo: ${l.malo||'—'}</div>
+      <div class="ls-detail">${l.verbrauch?l.verbrauch+' kWh/a':'—'} &nbsp;·&nbsp; Laufzeit bis: ${l.laufzeit||'—'} &nbsp;·&nbsp; Frist: ${l.kuendigung||'—'}</div>
+    </div>`;
+  });
+
+  if (state.showLsForm) {
+    const f = state.lsForm;
+    html += `<div class="ls-form-card">
+      <div class="ls-form-title">Neue Lieferstelle</div>
+      <div class="toggle-group">
+        <button class="toggle-btn ${f.typ==='Strom'?'active':''}" onclick="setTyp('Strom')">⚡ Strom</button>
+        <button class="toggle-btn ${f.typ==='Erdgas'?'active':''}" onclick="setTyp('Erdgas')">🔥 Erdgas</button>
+      </div>
+      <div class="field"><label>Aktueller Versorger</label><input type="text" id="l_vrs" value="${esc(f.versorger)}" placeholder="E.ON, Vattenfall …"></div>
+      <div class="row2">
+        <div class="field"><label>Kundennummer</label><input type="text" id="l_kdnr" value="${esc(f.kdnr)}" placeholder="123456"></div>
+        <div class="field"><label>Zählernummer</label><input type="text" id="l_znr" value="${esc(f.zaehlernr)}" placeholder="DE…"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Vertragslaufzeit</label><input type="text" id="l_lzt" value="${esc(f.laufzeit)}" placeholder="31.12.2025"></div>
+        <div class="field"><label>Kündigungsfrist</label><input type="text" id="l_kfr" value="${esc(f.kuendigung)}" placeholder="6 Wochen"></div>
+      </div>
+      <div class="field"><label>MaLo-ID</label><input type="text" id="l_malo" value="${esc(f.malo)}" placeholder="50XXXXXXXXXX" inputmode="numeric"></div>
+      <div class="field"><label>Jahresverbrauch (kWh)</label><input type="number" id="l_vbr" value="${esc(f.verbrauch)}" placeholder="50000" inputmode="numeric"></div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button onclick="saveLs()" style="flex:1;padding:12px;background:linear-gradient(135deg,#4F72FF,#00D4AA);border:none;border-radius:10px;color:white;font-size:14px;font-weight:600;cursor:pointer">Speichern</button>
+        <button onclick="cancelLs()" style="padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:rgba(160,180,255,0.7);font-size:14px;cursor:pointer">Abbrechen</button>
+      </div>
+    </div>`;
+  } else {
+    html += `<button class="btn-secondary" onclick="showLsForm()">+ Weitere Lieferstelle erfassen</button>`;
+  }
+  c.innerHTML = html;
+}
+
+/* ─── Step 3: Bank ─── */
+function renderBank(c) {
+  c.innerHTML = `
+    <div class="section-title">Bankverbindung</div>
+    <div class="section-sub">Schritt 3 von 4 — Alle Felder optional</div>
+    <div class="field"><label>IBAN</label><input type="text" id="b_iban" value="${esc(state.bd.iban)}" placeholder="DE89 3704 0044 0532 0130 00" autocomplete="off"></div>
+    <div class="field"><label>BIC</label><input type="text" id="b_bic" value="${esc(state.bd.bic)}" placeholder="COBADEFFXXX"></div>
+    <div class="divider"></div>
+    <div style="font-size:12px;font-weight:600;color:rgba(160,180,255,0.6);text-transform:uppercase;letter-spacing:0.9px;margin-bottom:14px">Firmenregistrierung</div>
+    <div class="field"><label>Steuernummer</label><input type="text" id="b_stnr" value="${esc(state.bd.stnr)}" placeholder="12/345/67890"></div>
+    <div class="field"><label>HRB-Nummer</label><input type="text" id="b_hrb" value="${esc(state.bd.hrb)}" placeholder="HRB 12345 B"></div>
+    <div class="field"><label>USt.-ID-Nummer</label><input type="text" id="b_ustid" value="${esc(state.bd.ustid)}" placeholder="DE123456789"></div>
+    <div style="height:8px"></div>`;
+}
+
+/* ─── Step 4: Unterzeichnung ─── */
+function renderSign(c) {
+  c.innerHTML = `
+    <div class="section-title">Unterzeichnung</div>
+    <div class="section-sub">Schritt 4 von 4 — Beratungsauftrag bestätigen</div>
+    <div class="row2">
+      <div class="field"><label>Vorname</label><input type="text" id="u_vn" value="${esc(state.uz.vorname)}" placeholder="Max" autocomplete="given-name"></div>
+      <div class="field"><label>Nachname</label><input type="text" id="u_nn" value="${esc(state.uz.nachname)}" placeholder="Mustermann" autocomplete="family-name"></div>
+    </div>
+    <div class="info-box">
+      Mit Ihrer Unterschrift bestätigen Sie, den
+      <span class="vm-link" onclick="state.vmModal=true;render()">Beratungsauftrag</span>
+      gelesen und akzeptiert zu haben.
+    </div>
+    <div class="field"><label>Unterschrift</label></div>
+    <div class="sig-wrap" id="sigWrap" style="height:190px">
+      <canvas id="sigCanvas" style="height:190px"></canvas>
+      <div class="sig-hint" id="sigHint">✍ Hier mit dem Finger unterschreiben</div>
+    </div>
+    <div class="sig-actions">
+      <button class="sig-clear" onclick="clearSig()">🗑 Löschen</button>
+      <button onclick="confirmSig()" style="flex:2;padding:11px;background:linear-gradient(135deg,#4F72FF,#00D4AA);border:none;border-radius:11px;color:white;font-size:14px;font-weight:600;cursor:pointer">✓ Unterschrift bestätigen</button>
+    </div>
+    ${state.sigDataUrl ? `<div class="sig-confirmed">✓ Unterschrift erfasst &nbsp;·&nbsp; ${state.sigTs}</div>` : ''}
+    <div style="height:16px"></div>
+    <button class="btn-primary" onclick="submitForm()">Auftrag abschließen &amp; PDF erstellen</button>
+    <div style="height:16px"></div>`;
+}
+
+/* ─── Success ─── */
+function renderSuccess(app) {
+  const hdr = document.createElement('div');
+  hdr.className = 'header';
+  hdr.innerHTML = `<div class="header-logo"><div class="logo-icon">E</div><div><div class="logo-name">Energate Consulting</div><div class="logo-sub">Auftrag abgeschlossen</div></div></div>`;
+  app.appendChild(hdr);
+  const sc = document.createElement('div');
+  sc.className = 'success-screen';
+  sc.innerHTML = `
+    <div class="success-icon">✅</div>
+    <div class="section-title" style="margin-bottom:10px">Auftrag erfasst!</div>
+    <p style="color:rgba(160,180,255,0.65);margin-bottom:30px;font-size:15px;line-height:1.65;max-width:300px">Alle Daten wurden gespeichert. Das PDF kann jetzt heruntergeladen werden.</p>
+    <button class="btn-primary" style="max-width:320px;margin-bottom:14px" onclick="downloadPDF()">📄 PDF herunterladen</button>
+    <button class="btn-secondary" style="max-width:320px" onclick="resetApp()">Neuen Auftrag erfassen</button>`;
+  app.appendChild(sc);
+}
+
+/* ─── Missing Modal ─── */
+function renderMissingModal(app) {
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.innerHTML = `<div class="modal">
+    <div class="modal-title">⚠️ Fehlende Angaben</div>
+    <p style="font-size:13.5px;color:rgba(160,180,255,0.75);margin-bottom:14px">Folgende Felder sind nicht ausgefüllt:</p>
+    ${state.missingFields.map(f=>`<div style="padding:9px 13px;background:rgba(255,170,40,0.07);border:1px solid rgba(255,170,40,0.2);border-radius:9px;margin-bottom:8px;font-size:13.5px;color:#FFB832">• ${f}</div>`).join('')}
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeMissing()">Zurück &amp; ausfüllen</button>
+      <button class="modal-btn confirm" onclick="proceedAnyway()">Trotzdem weiter</button>
+    </div>
+  </div>`;
+  app.appendChild(ov);
+}
+
+/* ─── VM Modal ─── */
+function renderVMModal(app) {
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.innerHTML = `<div class="modal">
+    <div class="modal-title">Beratungsauftrag</div>
+    <div class="modal-body">${VM_TEXT}</div>
+    <button class="modal-btn confirm" onclick="state.vmModal=false;render()" style="width:100%;margin-top:20px">Schließen</button>
+  </div>`;
+  app.appendChild(ov);
+}
+
+/* ────────── ACTIONS ────────── */
+function closeMissing() { state.missingModal = false; state.missingFields = []; render(); }
+function proceedAnyway() { state.missingModal = false; state.missingFields = []; state.step++; render(); }
+
+function handleNext() {
+  saveStep();
+  const m = checkMissing();
+  if (m.length) { state.missingFields = m; state.missingModal = true; render(); }
+  else { state.step++; render(); }
+}
+
+function saveStep() {
+  if (state.step === 0) {
+    state.kd = { firma: v('f_firma'), gf: v('f_gf'), strasse: v('f_str'), plz: v('f_plz'), ort: v('f_ort'), email: v('f_email'), tel: v('f_tel'), stnr: v('f_stnr') };
+  } else if (state.step === 2) {
+    state.bd = { iban: v('b_iban'), bic: v('b_bic'), stnr: v('b_stnr'), hrb: v('b_hrb'), ustid: v('b_ustid') };
+  } else if (state.step === 3) {
+    state.uz = { vorname: v('u_vn'), nachname: v('u_nn') };
+  }
+}
+
+function checkMissing() {
+  const m = [];
+  if (state.step === 0) {
+    if (!v('f_firma')) m.push('Firmenname');
+    if (!v('f_gf')) m.push('Geschäftsführer');
+    if (!v('f_str')) m.push('Straße & Hausnummer');
+    if (!v('f_plz')) m.push('PLZ');
+    if (!v('f_ort')) m.push('Ort');
+    if (!v('f_email')) m.push('E-Mail');
+    if (!v('f_tel')) m.push('Telefonnummer');
+    if (!v('f_stnr')) m.push('Steuernummer');
+  }
+  return m;
+}
+
+function showLsForm() { state.showLsForm = true; render(); }
+function cancelLs() { state.showLsForm = false; render(); }
+
+function setTyp(t) {
+  saveLsFormFields();
+  state.lsForm.typ = t;
+  render();
+}
+
+function saveLsFormFields() {
+  state.lsForm.versorger = v('l_vrs') || state.lsForm.versorger;
+  state.lsForm.kdnr = v('l_kdnr') || state.lsForm.kdnr;
+  state.lsForm.zaehlernr = v('l_znr') || state.lsForm.zaehlernr;
+  state.lsForm.laufzeit = v('l_lzt') || state.lsForm.laufzeit;
+  state.lsForm.kuendigung = v('l_kfr') || state.lsForm.kuendigung;
+  state.lsForm.malo = v('l_malo') || state.lsForm.malo;
+  state.lsForm.verbrauch = v('l_vbr') || state.lsForm.verbrauch;
+}
+
+function saveLs() {
+  const ls = { versorger:v('l_vrs'), kdnr:v('l_kdnr'), zaehlernr:v('l_znr'), laufzeit:v('l_lzt'), kuendigung:v('l_kfr'), malo:v('l_malo'), verbrauch:v('l_vbr'), typ:state.lsForm.typ };
+  state.ls.push(ls);
+  state.lsForm = { versorger:'', kdnr:'', laufzeit:'', kuendigung:'', zaehlernr:'', malo:'', verbrauch:'', typ:'Strom' };
+  state.showLsForm = false;
+  render();
+}
+
+function deleteLs(i) { state.ls.splice(i,1); render(); }
+
+/* ────────── SIGNATURE ────────── */
+function initSig() {
+  sigCanvas = document.getElementById('sigCanvas');
+  if (!sigCanvas) return;
+  const wrap = document.getElementById('sigWrap');
+  const W = wrap ? wrap.offsetWidth : 360;
+  sigCanvas.width = W;
+  sigCanvas.height = 190;
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.strokeStyle = '#003080';
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+
+  if (state.sigDataUrl) {
+    const img = new Image();
+    img.onload = () => sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
+    img.src = state.sigDataUrl;
+    const hint = document.getElementById('sigHint');
+    if (hint) hint.style.display = 'none';
+  }
+
+  function pos(e) {
+    const r = sigCanvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: (t.clientX - r.left) * (sigCanvas.width / r.width), y: (t.clientY - r.top) * (sigCanvas.height / r.height) };
+  }
+
+  sigCanvas.addEventListener('mousedown', e => { sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  sigCanvas.addEventListener('mousemove', e => { if(!sigDrawing) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); sigHasData=true; const h=document.getElementById('sigHint'); if(h) h.style.display='none'; });
+  sigCanvas.addEventListener('mouseup', ()=>sigDrawing=false);
+  sigCanvas.addEventListener('mouseleave', ()=>sigDrawing=false);
+
+  sigCanvas.addEventListener('touchstart', e=>{ e.preventDefault(); sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); },{passive:false});
+  sigCanvas.addEventListener('touchmove', e=>{ e.preventDefault(); if(!sigDrawing) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); sigHasData=true; const h=document.getElementById('sigHint'); if(h) h.style.display='none'; },{passive:false});
+  sigCanvas.addEventListener('touchend', ()=>sigDrawing=false,{passive:false});
+}
+
+function clearSig() {
+  if(sigCtx) { sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); sigHasData=false; }
+  state.sigDataUrl = null;
+  const hint = document.getElementById('sigHint');
+  if(hint) hint.style.display='';
+  const confirmed = document.querySelector('.sig-confirmed');
+  if(confirmed) confirmed.remove();
+}
+
+function confirmSig() {
+  if(!sigCanvas||!sigHasData) { alert('Bitte zuerst unterschreiben!'); return; }
+  state.sigDataUrl = sigCanvas.toDataURL('image/png');
+  state.sigTs = new Date().toLocaleString('de-DE');
+  render();
+}
+
+function submitForm() {
+  saveStep();
+  if(!state.sigDataUrl) { alert('Bitte zuerst unterschreiben und bestätigen!'); return; }
+  if(!state.uz.vorname || !state.uz.nachname) { alert('Bitte Vor- und Nachname eintragen!'); return; }
+  state.step = 5;
+  render();
+}
+
+function resetApp() {
+  Object.assign(state, {
+    step:0, kd:{firma:'',gf:'',strasse:'',plz:'',ort:'',email:'',tel:'',stnr:''},
+    ls:[], lsForm:{versorger:'',kdnr:'',laufzeit:'',kuendigung:'',zaehlernr:'',malo:'',verbrauch:'',typ:'Strom'},
+    showLsForm:false, bd:{iban:'',bic:'',stnr:'',hrb:'',ustid:''},
+    uz:{vorname:'',nachname:''}, sigDataUrl:null, sigTs:null, missingModal:false, missingFields:[], vmModal:false
+  });
+  sigHasData=false; sigDrawing=false;
+  render();
+}
+
+/* ────────── PDF ────────── */
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210;
+  let y = 0;
+
+  const BLUE   = [13, 27, 62];
+  const ORANGE = [255, 140, 0];
+  const LGRAY  = [245, 247, 255];
+  const DTEXT  = [25, 25, 40];
+  const MTEXT  = [90, 95, 120];
+
+  /* ── Briefkopf ── */
+  doc.setFillColor(...BLUE);
+  doc.rect(0, 0, W, 35, 'F');
+  doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('ENERGATE CONSULTING', 14, 14);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(180,200,255);
+  doc.text('Energievermittlung für Gewerbekunden', 14, 21);
+  doc.setFontSize(7.5); doc.setTextColor(150,175,240);
+  doc.text('Musterstraße 1  ·  10115 Berlin  ·  info@energate-consulting.de  ·  +49 30 000000', 14, 29);
+  // Accent bar
+  doc.setFillColor(...ORANGE);
+  doc.rect(0, 35, W, 1.5, 'F');
+
+  y = 43;
+
+  /* Document title */
+  doc.setFontSize(15); doc.setFont('helvetica','bold'); doc.setTextColor(...BLUE);
+  doc.text('Beratungsauftrag', 14, y);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...MTEXT);
+  doc.text(`Erstellt: ${new Date().toLocaleString('de-DE')}`, W-14, y, {align:'right'});
+  y += 9;
+  doc.setDrawColor(...ORANGE); doc.setLineWidth(0.4);
+  doc.line(14, y, W-14, y);
+  y += 8;
+
+  /* ── Section Header helper ── */
+  function secHead(title) {
+    doc.setFillColor(...LGRAY);
+    doc.rect(14, y, W-28, 7, 'F');
+    doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(...BLUE);
+    doc.text(title.toUpperCase(), 17, y+4.8);
+    y += 10;
+  }
+
+  /* ── Row helper ── */
+  function row(label, val) {
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...MTEXT);
+    doc.text(label, 17, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...DTEXT);
+    const lines = doc.splitTextToSize(val||'—', 100);
+    doc.text(lines, 75, y);
+    y += lines.length * 5.5;
+  }
+
+  /* ── KUNDENDATEN ── */
+  secHead('Kundendaten');
+  const k = state.kd;
+  row('Firmenname', k.firma);
+  row('Geschäftsführer', k.gf);
+  row('Anschrift', `${k.strasse}, ${k.plz} ${k.ort}`);
+  row('E-Mail', k.email);
+  row('Telefon', k.tel);
+  row('Steuernummer', k.stnr);
+  const b = state.bd;
+  if(b.hrb) row('HRB-Nummer', b.hrb);
+  if(b.ustid) row('USt.-ID', b.ustid);
+  if(b.stnr) row('Steuernummer (HRB)', b.stnr);
+  y += 4;
+
+  /* ── LIEFERSTELLEN ── */
+  secHead('Lieferstellen');
+  if (state.ls.length > 0) {
+    const cols = [17, 46, 76, 106, 133, 158, 183];
+    const heads = ['Typ','Versorger','Kd.-Nr.','Zähler-Nr.','MaLo-ID','Laufzeit','kWh/a'];
+    doc.setFillColor(...BLUE);
+    doc.rect(14, y, W-28, 7, 'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    heads.forEach((h,i) => doc.text(h, cols[i], y+4.8));
+    y += 8;
+
+    state.ls.forEach((l, idx) => {
+      if(idx%2===0){ doc.setFillColor(249,250,255); doc.rect(14,y,W-28,6.5,'F'); }
+      doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...DTEXT);
+      const vals = [l.typ||'—', (l.versorger||'—').slice(0,13), l.kdnr||'—', (l.zaehlernr||'—').slice(0,13), (l.malo||'—').slice(0,13), l.laufzeit||'—', l.verbrauch||'—'];
+      vals.forEach((v,i)=>doc.text(String(v), cols[i], y+4.5));
+      y += 7;
+    });
+  } else {
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...MTEXT);
+    doc.text('Keine Lieferstellen erfasst', 17, y); y+=6;
+  }
+  y += 5;
+
+  /* ── BANKVERBINDUNG ── */
+  secHead('Bankverbindung');
+  row('IBAN', b.iban || '—');
+  row('BIC', b.bic || '—');
+  y += 4;
+
+  /* ── VOLLMACHTSTEXT ── */
+  secHead('Beratungsauftrag / Vollmacht');
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(50,55,80);
+  const vmLines = doc.splitTextToSize(VM_TEXT, W-32);
+  // page break if needed
+  if (y + vmLines.length * 4 > 270) {
+    doc.addPage();
+    // Repeat thin header on new page
+    doc.setFillColor(...BLUE); doc.rect(0,0,W,10,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    doc.text('ENERGATE CONSULTING — Beratungsauftrag (Fortsetzung)', 14, 7);
+    doc.setFillColor(...ORANGE); doc.rect(0,10,W,1,'F');
+    y = 18;
+  }
+  vmLines.forEach(l => { doc.text(l, 17, y); y += 4.2; });
+  y += 5;
+
+  /* ── UNTERSCHRIFT ── */
+  if (y + 50 > 275) { doc.addPage(); doc.setFillColor(...BLUE); doc.rect(0,0,W,10,'F'); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255); doc.text('ENERGATE CONSULTING — Unterschrift', 14, 7); doc.setFillColor(...ORANGE); doc.rect(0,10,W,1,'F'); y=18; }
+  secHead('Unterschrift');
+
+  if (state.sigDataUrl) {
+    try { doc.addImage(state.sigDataUrl, 'PNG', 17, y, 85, 30); } catch(e) {}
+  }
+  doc.setDrawColor(...MTEXT); doc.setLineWidth(0.3);
+  doc.line(17, y+33, 105, y+33);
+  doc.setFontSize(8.5); doc.setFont('helvetica','normal'); doc.setTextColor(...MTEXT);
+  doc.text(`${state.uz.vorname} ${state.uz.nachname}`, 17, y+38);
+  doc.text(`Datum: ${state.sigTs || new Date().toLocaleString('de-DE')}`, 17, y+43);
+
+  // Footer
+  const pCount = doc.internal.getNumberOfPages();
+  for(let p=1; p<=pCount; p++){
+    doc.setPage(p);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(170,175,200);
+    doc.text('Energate Consulting · Musterstraße 1 · 10115 Berlin', W/2, 290, {align:'center'});
+    doc.text(`Seite ${p} / ${pCount}`, W-14, 290, {align:'right'});
+  }
+
+  const fname = `Beratungsauftrag_${(k.firma||'Kunde').replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toLocaleDateString('de-DE').replace(/\./g,'-')}.pdf`;
+  doc.save(fname);
+}
+
+/* ── Util ── */
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+/* ── Global handlers ── */
+window.deleteLs = deleteLs;
+window.showLsForm = showLsForm;
+window.cancelLs = cancelLs;
+window.setTyp = setTyp;
+window.saveLs = saveLs;
+window.clearSig = clearSig;
+window.confirmSig = confirmSig;
+window.submitForm = submitForm;
+window.closeMissing = closeMissing;
+window.proceedAnyway = proceedAnyway;
+window.downloadPDF = downloadPDF;
+window.resetApp = resetApp;
+
+render();
+</script>
+</body>
+</html>
