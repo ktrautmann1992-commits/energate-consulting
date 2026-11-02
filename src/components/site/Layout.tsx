@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
-import { CalendarCheck, Mail, Menu, Phone, X, Zap } from "lucide-react";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { CalendarCheck, Mail, Menu, Phone, X } from "lucide-react";
 import { ADDRESS, BOOKING_URL, EMAIL, PHONE } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,22 +21,45 @@ export const ctaGhostDark =
 export const ctaOutline =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/25 px-6 text-base font-semibold text-primary transition hover:bg-accent";
 
+function EgcLogo({ light, className }: { light?: boolean; className?: string }) {
+  const gid = useId().replace(/:/g, "");
+  // Original-Logo von egc-energie.de: weiß auf dunklem Grund, Markenblau auf hellem Grund
+  const fill = light ? "#FFFFFF" : "#0F2440";
+  return (
+    <svg viewBox="0 0 670 200" fill="none" role="img" aria-label="EGC Energie" className={className}>
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#2E6B2A" />
+          <stop offset="1" stopColor="#7BC63F" />
+        </linearGradient>
+      </defs>
+      <g fill={fill}>
+        <path d="M0 0 H150 L138 34 H0 Z" />
+        <path d="M14 83 H120 L108 117 H2 Z" />
+        <path d="M0 166 H150 L138 200 H0 Z" />
+        <path d="M380.7 29.3 A100 100 0 1 0 380.7 170.7 L367.1 133 A66 66 0 1 1 367.1 67 Z" />
+        <path d="M640.7 29.3 A100 100 0 1 0 640.7 170.7 L627.1 133 A66 66 0 1 1 627.1 67 Z" />
+      </g>
+      <path d="M300 83 H428 L416 117 H288 Z" fill={`url(#${gid})`} />
+    </svg>
+  );
+}
+
 function Logo({ light }: { light?: boolean }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5" aria-label="EGC Energie – Startseite">
-      <span className="grid size-9 place-items-center rounded-lg bg-deep text-energy">
-        <Zap className="size-5" fill="currentColor" />
-      </span>
-      <span className={cn("leading-tight", light ? "text-on-dark" : "text-foreground")}>
-        <span className="block text-base font-extrabold tracking-tight">EGC Energie</span>
-        <span
-          className={cn(
-            "block text-[11px] font-medium",
-            light ? "text-on-dark-muted" : "text-muted-foreground",
-          )}
-        >
-          Dienstleister in der Energiewirtschaft
-        </span>
+    <Link to="/" className="flex items-center gap-3" aria-label="EGC Energie – Startseite">
+      <EgcLogo light={light} className="h-8 w-auto shrink-0 sm:h-9" />
+      <span
+        className={cn(
+          "border-l pl-3 text-xs font-medium leading-tight",
+          light
+            ? "border-on-dark/25 text-on-dark-muted"
+            : "border-border text-muted-foreground",
+        )}
+      >
+        Dienstleister in der
+        <br />
+        Energiewirtschaft
       </span>
     </Link>
   );
