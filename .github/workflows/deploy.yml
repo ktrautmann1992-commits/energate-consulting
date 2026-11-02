@@ -1,0 +1,23 @@
+name: Website veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Auf Netlify veröffentlichen (egc-energie.de)
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 72f5f06b-545d-45fc-ae1c-b0592b2c92c9
+        run: npx -y netlify-cli@17 deploy --prod --dir dist/client --message "Deploy ${{ github.sha }}"

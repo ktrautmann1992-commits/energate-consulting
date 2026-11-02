@@ -1,0 +1,170 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-deep: var(--primary-deep);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-energy: var(--energy);
+  --color-energy-strong: var(--energy-strong);
+  --color-energy-foreground: var(--energy-foreground);
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-muted: var(--on-dark-muted);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.975184937 0.003420486 247.857968221);
+  --foreground: oklch(0.259438208 0.059436627 256.330763599);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  /* Exakte Werte von egc-energie.de: #0F2440, #0A1626, #5FB02E, #3D8230. */
+  --primary: oklch(0.259438208 0.059436627 256.330763599);
+  --primary-deep: oklch(0.198326495 0.036750498 256.043168204);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.970970474 0.005864799 239.819127497);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--secondary);
+  --muted-foreground: oklch(0.486766265 0.027691079 250.336758419);
+  --accent: oklch(0.947503059 0.03701898 128.90355201);
+  --accent-foreground: var(--energy-strong);
+  --energy: oklch(0.680109882 0.180319263 136.301286178);
+  --energy-strong: oklch(0.542904828 0.136132342 140.615761754);
+  --energy-foreground: var(--primary-deep);
+  --on-dark: oklch(1 0 0);
+  --on-dark-muted: oklch(0.837303435 0.029082233 246.527387535);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.896997894 0.011186904 243.666032704);
+  --input: var(--border);
+  --ring: var(--energy);
+  --gradient-hero: linear-gradient(
+    115deg,
+    color-mix(in oklab, var(--primary) 80%, var(--energy-strong)) 0%,
+    color-mix(in oklab, var(--primary) 85%, transparent) 50%,
+    color-mix(in oklab, var(--primary) 38%, transparent) 100%
+  );
+  --gradient-deep: linear-gradient(160deg, var(--primary-deep), var(--primary));
+  --shadow-card:
+    0 1px 2px color-mix(in oklab, var(--primary) 4%, transparent),
+    0 12px 32px -12px color-mix(in oklab, var(--primary) 12%, transparent);
+  --shadow-lift:
+    0 2px 4px color-mix(in oklab, var(--primary) 5%, transparent),
+    0 24px 48px -16px color-mix(in oklab, var(--primary) 25%, transparent);
+  --shadow-energy: 0 10px 28px -10px color-mix(in oklab, var(--energy) 45%, transparent);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0;
+    text-wrap: balance;
+  }
+}
+
+.counter {
+  display: inline-grid;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.counter-final,
+.counter-animated {
+  grid-area: 1 / 1;
+}
+.counter-final {
+  visibility: hidden;
+}
+.counter-animated {
+  justify-self: start;
+}
+@media (prefers-reduced-motion: reduce) {
+  .counter-final {
+    visibility: visible;
+  }
+  .counter-animated {
+    visibility: hidden;
+  }
+}
+
+@utility bg-hero {
+  background-image: var(--gradient-hero);
+}
+@utility bg-deep {
+  background-image: var(--gradient-deep);
+}
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+@utility shadow-energy {
+  box-shadow: var(--shadow-energy);
+}
+@utility eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+@utility reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  &[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
